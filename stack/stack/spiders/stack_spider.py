@@ -17,5 +17,5 @@ class StackSpider(Spider):
         for question in questions:
             item = StackItem()
             item['title'] = question.xpath('a[@class="s-link"]/text()').extract()[0]
-            item['url'] = question.xpath('a@class="s-link"]/@href').extract()[0]
+            item['url'] = question.xpath('a[@class="s-link"]/@href').extract()[0]
             yield item
