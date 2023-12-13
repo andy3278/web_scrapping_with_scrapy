@@ -5,9 +5,32 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-import settings
+from scrapy.utils.project import get_project_settings
+from scrapy.exceptions import DropItem
+import logging
+import scrapy
+import pymongo
+from pymongo.server_api import ServerApi
 
-class StackPipeline:
+
+class MongoDBPipeline(object):
+
+    def __init__(self):
+        settings = get_project_settings()
+        connection = pymongo.MongoClient(
+            settings.get('MONGODB_URL'),
+            server_api=ServerApi('1')
+        )
+        db = connection[settings.get('MONGODB_DB')]
+        self.collection = db[settings.get('MONGODB_COLLECTION')]
+
     def process_item(self, item, spider):
+        valid = True
+        for data in item:
+            if not data:
+                valid = False
+                raise DropItem("Missing {0}!".format(data))
+        if valid:
+            self.collection.insert(dict(item))
+            logging.debug("Question added to MongoDB database!")
         return item
